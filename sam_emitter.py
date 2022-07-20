@@ -2,6 +2,7 @@ import math
 import json
 from websockets import connect
 import time
+import astropy
 
 
 class Sam_Emitter():
@@ -64,7 +65,7 @@ class Sam_Emitter():
 
     def get_status(self):
         return {
-            "sam_id": self.name,
+            "sam_id" : self.name,
             "el": self.elevation_degrees,
             "az":self.azimuth_degrees,
             "status": self.status,
@@ -77,9 +78,12 @@ class Sam_Emitter():
             }
 
 
-    def change_target(self, target):
-        self.target= target
-        self.status="moving"
+def change_target(updated_sam):
+    updated_sam=json.loads(updated_sam)
+    old_sam = [x for x in sam_list if x.name==updated_sam['sam_id']][0]
+    old_sam.target = updated_sam["cur_target"]
+    old_sam.threat = updated_sam['cur_threat']
+    old_sam.status="moving"
 
 
 
@@ -95,16 +99,12 @@ if __name__ == "__main__":
         sam_json=[]
         for sam in sam_list:
             sam.track_target()
-            sam.change_target("A01")
             sam_json.append(sam.get_status())
+        change_target(json.dumps(Sam_Emitter('Sam01', 38.002, 169.2312).get_status()))
+        print(sam_json)
         sam_json=json.dumps(sam_json)
         pos_rep["A01"]['altitude']-=50
         pos_rep["A01"]['latitude']-=1.0
         pos_rep["A01"]['longitude']+=1.0
         time.sleep(1)
-
-
-
-
-
 
