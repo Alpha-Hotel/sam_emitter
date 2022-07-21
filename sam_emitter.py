@@ -1,5 +1,4 @@
 import json
-import time
 import pymap3d as pm
 
 
@@ -50,7 +49,6 @@ class Sam_Emitter():
                      self.elevation_degrees = self.elevation_degrees+self.slew_elevation_rate
                 else:
                     self.elevation_degrees=self.elevation_degrees-self.slew_elevation_rate
-            desired_antenna_azimuth_degrees = 273
             difference= double_angle_difference(self.azimuth_degrees, desired_antenna_azimuth_degrees)
             ### changing antenna azimuth
             if abs(difference) < 10: 
