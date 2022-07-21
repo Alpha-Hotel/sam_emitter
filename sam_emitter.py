@@ -16,7 +16,7 @@ class Sam_Emitter():
         self.heading= 0.
         self.slew_azimuth_rate = 10.0 #degrees per second
         self.slew_elevation_rate = 5.0
-        self.status = 'Not Ready'
+        self.status = 'not ready'
         self.threat = ''
         self.slant_range_to_target = 0
 
