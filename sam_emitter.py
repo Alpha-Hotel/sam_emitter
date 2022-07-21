@@ -1,4 +1,5 @@
 import json
+import time
 import pymap3d as pm
 
 
@@ -22,51 +23,62 @@ class Sam_Emitter():
     def track_target(self, pos_reps): 
         '''Change altitude + azimuth based on degrees from desired angle'''
         pos_reps = json.loads(pos_reps)
-        pos_rep = [report for report in pos_reps if report["name"] == self.target][0]
-        def double_angle_difference(angle1, angle2):
-            diff = ( angle2 - angle1 + 180 ) % 360 - 180
-            if (diff < -180):
-                return (diff +360)
-            else:
-                return diff
-        def feet_to_meters(feet):
-            return feet/3.2808399
-        if not self.target:
-            desired_antenna_azimuth_degrees,desired_antenna_elevation_degrees, self.slant_range_to_target = pm.geodetic2aer(
-                float(pos_rep[self.target]['latitude']), 
-                float(pos_rep[self.target]['longitude']), 
-                feet_to_meters(float(pos_rep[self.target]['altitude'])), 
-                self.latitude, 
-                self.longitude, 
-                feet_to_meters(self.antenna_height)) #meters"
+        
+        try:
+            pos_rep = [report for report in pos_reps if report["name"] == self.target][0]
+            #print(pos_rep)
+        except IndexError:
+            print('nothing to be tracked')
+            return
 
-            ### changing antenna elevation
-            difference= double_angle_difference(self.elevation_degrees, desired_antenna_elevation_degrees)
-            if abs(desired_antenna_elevation_degrees-self.elevation_degrees) < 10: # changing antenna elevation
-                self.elevation_degrees = desired_antenna_elevation_degrees
-            else:
-                if difference > 0:
-                     self.elevation_degrees = self.elevation_degrees+self.slew_elevation_rate
-                else:
-                    self.elevation_degrees=self.elevation_degrees-self.slew_elevation_rate
-            difference= double_angle_difference(self.azimuth_degrees, desired_antenna_azimuth_degrees)
-            ### changing antenna azimuth
-            if abs(difference) < 10: 
-                self.azimuth_degrees = desired_antenna_azimuth_degrees
-            else:
-                if difference > 0:
-                     self.azimuth_degrees = self.azimuth_degrees+self.slew_azimuth_rate
-                else:
-                    self.azimuth_degrees=self.azimuth_degrees-self.slew_azimuth_rate
-                    if self.azimuth_degrees < 0:
-                        self.azimuth_degrees+=360
-            if abs(desired_antenna_elevation_degrees-self.elevation_degrees) < 10 and abs(desired_antenna_azimuth_degrees-self.azimuth_degrees) < 10:
-                self.status="ready"
-            else: 
-                self.status="moving"
+
+        desired_antenna_azimuth_degrees, desired_antenna_elevation_degrees, self.slant_range_to_target = pm.geodetic2aer(
+            float(pos_rep['lat']), 
+            float(pos_rep['lng']), 
+            self.feet_to_meters(float(pos_rep['alt'])), 
+            self.latitude, 
+            self.longitude, 
+            self.feet_to_meters(self.antenna_height)) #meters"
+
+        ### changing antenna elevation
+        #difference = self.double_angle_difference(self.elevation_degrees, desired_antenna_elevation_degrees)
+        #if abs(desired_antenna_elevation_degrees - self.elevation_degrees) < 10: # changing antenna elevation
+        #    self.elevation_degrees = desired_antenna_elevation_degrees
+        #else:
+        #    if difference > 0:
+        #         self.elevation_degrees = self.elevation_degrees+self.slew_elevation_rate
+        #    else:
+        #        self.elevation_degrees=self.elevation_degrees - self.slew_elevation_rate
+
+        difference = self.double_angle_difference(self.azimuth_degrees, desired_antenna_azimuth_degrees)
+        ### changing antenna azimuth
+        if abs(difference) < 10: 
+            self.azimuth_degrees = desired_antenna_azimuth_degrees
         else:
-            self.status= "not ready"
-            self.slant_range_to_target=0
+            if difference > 0:
+                 self.azimuth_degrees = self.azimuth_degrees+self.slew_azimuth_rate
+            else:
+                self.azimuth_degrees = self.azimuth_degrees-self.slew_azimuth_rate
+                if self.azimuth_degrees < 0:
+                    self.azimuth_degrees += 360
+        if abs(desired_antenna_elevation_degrees-self.elevation_degrees) < 10 and abs(desired_antenna_azimuth_degrees-self.azimuth_degrees) < 10:
+            self.status="ready"
+        else: 
+            self.status="moving"
+        #else:
+        #    self.status= "not ready"
+        #    self.slant_range_to_target=0
+
+
+    def double_angle_difference(self, angle1, angle2):
+        diff = ( angle2 - angle1 + 180 ) % 360 - 180
+        if (diff < -180):
+            return (diff +360)
+        else:
+            return diff
+
+    def feet_to_meters(self, feet):
+        return feet/3.2808399
 
     def get_status(self):
         return {
