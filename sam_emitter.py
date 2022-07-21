@@ -18,6 +18,7 @@ class Sam_Emitter():
         self.slew_elevation_rate = 5.0
         self.status = 'Not Ready'
         self.threat = ''
+        self.slant_range_to_target = 0
 
     def track_target(self): 
         '''Change altitude + azimuth based on degrees from desired angle'''
@@ -30,7 +31,7 @@ class Sam_Emitter():
         def feet_to_meters(feet):
             return feet/3.2808399
         if not self.target  == '':
-            desired_antenna_azimuth_degrees,desired_antenna_elevation_degrees,range = pm.geodetic2aer(
+            desired_antenna_azimuth_degrees,desired_antenna_elevation_degrees, self.slant_range_to_target = pm.geodetic2aer(
                 float(pos_rep[self.target]['latitude']), 
                 float(pos_rep[self.target]['longitude']), 
                 feet_to_meters(float(pos_rep[self.target]['altitude'])), 
@@ -77,7 +78,8 @@ class Sam_Emitter():
             "lat":self.latitude,
             "long":self.longitude,
             "heading":self.heading,
-            "gnd_speed":self.speed
+            "gnd_speed":self.speed,
+            "range_to_target": self.slant_range_to_target
             }
 
 
