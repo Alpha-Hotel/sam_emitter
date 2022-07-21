@@ -1,8 +1,5 @@
-import math
 import json
-from websockets import connect
 import time
-import astropy
 import pymap3d as pm
 
 
