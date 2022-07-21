@@ -3,6 +3,7 @@ import json
 from websockets import connect
 import time
 import astropy
+import pymap3d as pm
 
 
 class Sam_Emitter():
@@ -29,12 +30,17 @@ class Sam_Emitter():
                 return (diff +360)
             else:
                 return diff
+        def feet_to_meters(feet):
+            return feet/3.2808399
         if not self.target  == '':
-            ### Non calculus based elevation calc
-            target_height_over_antenna = pos_rep[self.target]['altitude']-self.antenna_height
-            target_distance= math.sqrt(math.pow(self.latitude- pos_rep[self.target]['latitude'],2)+ math.pow(self.longitude- pos_rep[self.target]['longitude'],2))
-            desired_antenna_elevation_degrees = math.atan(target_height_over_antenna/target_distance)*(180./math.pi)
-            
+            desired_antenna_azimuth_degrees,desired_antenna_elevation_degrees,range = pm.geodetic2aer(
+                float(pos_rep[self.target]['latitude']), 
+                float(pos_rep[self.target]['longitude']), 
+                feet_to_meters(float(pos_rep[self.target]['altitude'])), 
+                self.latitude, 
+                self.longitude, 
+                feet_to_meters(self.antenna_height)) #meters"
+
             ### changing antenna elevation
             difference= double_angle_difference(self.elevation_degrees, desired_antenna_elevation_degrees)
             if abs(desired_antenna_elevation_degrees-self.elevation_degrees) < 10: # changing antenna elevation
@@ -89,18 +95,20 @@ def change_target(updated_sam):
 
 if __name__ == "__main__":
     #lat long height
-    pos_rep ={ "A01":{'latitude':115,
+    pos_rep ={ "A01":{'latitude':40,
         'longitude' : 36.400, 
         'altitude': 2000}}
     sam_list = [Sam_Emitter('Sam01', 36.002, 120.2312), Sam_Emitter('Sam02', 28.002, 110.2312)]
     for sam in sam_list:
         sam.track_target()
+    new_target = Sam_Emitter('Sam02', 38.002, 169.2312)
+    new_target.target="A01"
     while True:
         sam_json=[]
         for sam in sam_list:
             sam.track_target()
             sam_json.append(sam.get_status())
-        change_target(json.dumps(Sam_Emitter('Sam01', 38.002, 169.2312).get_status()))
+        change_target(json.dumps(new_target.get_status()))
         print(sam_json)
         sam_json=json.dumps(sam_json)
         pos_rep["A01"]['altitude']-=50
