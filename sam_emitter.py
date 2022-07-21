@@ -17,7 +17,7 @@ class Sam_Emitter():
         self.slew_azimuth_rate = 10.0 #degrees per second
         self.slew_elevation_rate = 5.0
         self.status = 'not ready'
-        self.threat = ''
+        self.threat = 'merciful_potato'
         self.slant_range_to_target = 0
 
     def track_target(self, pos_reps): 
@@ -84,15 +84,12 @@ class Sam_Emitter():
             "range_to_target": self.slant_range_to_target
             }
 
-
 def change_target(updated_sam):
     updated_sam=json.loads(updated_sam)
     old_sam = [x for x in sam_list if x.name==updated_sam['sam_id']][0]
     old_sam.target = updated_sam["cur_target"]
     old_sam.threat = updated_sam['cur_threat']
     old_sam.status="moving"
-
-
 
 if __name__ == "__main__":
     #lat long height
