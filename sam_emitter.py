@@ -20,8 +20,10 @@ class Sam_Emitter():
         self.threat = ''
         self.slant_range_to_target = 0
 
-    def track_target(self): 
+    def track_target(self, pos_reps): 
         '''Change altitude + azimuth based on degrees from desired angle'''
+        pos_reps = json.loads(pos_reps)
+        pos_rep = [x for x in pos_reps if x["name"] == self.target][0]
         def double_angle_difference(angle1, angle2):
             diff = ( angle2 - angle1 + 180 ) % 360 - 180
             if (diff < -180):
@@ -30,7 +32,7 @@ class Sam_Emitter():
                 return diff
         def feet_to_meters(feet):
             return feet/3.2808399
-        if not self.target  == '':
+        if not self.target:
             desired_antenna_azimuth_degrees,desired_antenna_elevation_degrees, self.slant_range_to_target = pm.geodetic2aer(
                 float(pos_rep[self.target]['latitude']), 
                 float(pos_rep[self.target]['longitude']), 
