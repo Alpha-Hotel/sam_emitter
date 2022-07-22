@@ -1,0 +1,59 @@
+Arsenal Ideas
+- Run Arsenal calculations and do not use Test data
+- Can change the color of the bars (toggle color)
+- Checkbox to keep bar numbers on or off
+- LastUpdated by System
+- REL version toggle
+-
+
+
+Logo
+- Siggy
+- Something that looks good on a shirt
+- JNWC Logo
+- GPS
+-
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Things to consider:
+ - How many Systems
+ - How many Signals
+
+MAX view area is 52vh
+
+If there are X number of signals, it has to be Y height
+Should there be a MIN size for system?
+  - Is this driven by signal bar sizes?
+Should there be a MAX size for system?
+  - This must be a visual asthetic 
+
+Each signal bar has to be at least # tall (Is this actually true..?)
+
+Each signal bar has to be no larger than x
+  - If one system and one signal, limit to 200px
+  - If two systems and one signal, limit to 300px
+  - If one system and 4+ signal, up the limit 
+    - How?
+
+
+What is the largest number of signals to display?
+ - Is scrolling okay if it gets larger than screen?
+
+
+Each signal bar needs to be at least #, but they cannot be larger than #
+  Disregard the div VH variable and set a fixed size
+    How?
