@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 #
 # sam-wsclient connects to SAM and INGEST servers and recieves JSON objects
 #

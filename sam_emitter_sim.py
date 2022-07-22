@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 #
 # sam emitter sim server
 #
@@ -10,7 +12,6 @@ import sam_emitter
 
 emitter_server_port = 7060
 global current_acft_pos_repo
-#current_acft_pos_rep = {}
 
 async def main():
     while True:
@@ -23,30 +24,22 @@ async def send_status_report(websocket, path):
         for i in range(0,3):
             emitter_status_json_list.append(sim_emitter_list[i].get_status())
 
-        await websocket.send(json.dumps(emitter_status_json_list))
-        
+        try:
+            await websocket.send(json.dumps(emitter_status_json_list))
+        except websockets.exceptions.ConnectionClosedOK:
+            print('sam_emitter: client closed connection, not a problem')
+
         # get ack and handle if it's a command
         message = await websocket.recv()
 
 
-
         try:
             decoded_message = json.loads(message)
-            #print(decoded_message)
             print('sam_emitter_sim: recieved command for ' + decoded_message['sam_id'])
-             
             [emitter for emitter in sim_emitter_list if emitter.name == decoded_message['sam_id']][0].change_target(decoded_message)
 
         except ValueError:
             print('sam_emitter_sim: recieved client response: ' + message)
-
-
-        
-        #print(current_acft_pos_rep)
-
-        #print(sim_emitter_list[0].target)
-        
-        #[emitter for emitter in sim_emitter_list if emitter.name == decoded_message['sam_id']][0].track_target(current_acft_pos_rep)
 
 
         for i in range(0, len(sim_emitter_list)):
@@ -64,8 +57,7 @@ async def ingest_client_ws():
                 message_ingest = await websocket.recv()
 
                 global current_acft_pos_rep
-                #ugly hack with the square brackets since we dont have an array of acft yet.
-                current_acft_pos_rep = '[ ' + message_ingest + ' ]'
+                current_acft_pos_rep = message_ingest
                 await websocket.send('sam_emitter_sim: recieved')
 
 

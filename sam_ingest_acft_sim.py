@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 #
 # sam ingest server
 #
@@ -18,8 +20,6 @@ ingest_server_port = 6969
 
 async def main():
     while True:
-        #sim_acft.update_position()
-
         for i in range(0, len(sim_acft_list), 1):
             sim_acft_list[i].update_position()
 
@@ -27,9 +27,6 @@ async def main():
 
 async def send_pos_report(websocket, path):
     while True:
-        #await websocket.send(json.dumps(sim_acft.pos_report))
-        #print(sim_acft_list)
-        #await websocket.send(json.dumps(sim_acft_list))
         
         pos_rep_list = []
 
@@ -38,12 +35,10 @@ async def send_pos_report(websocket, path):
 
         await websocket.send(json.dumps(pos_rep_list))
 
-        print(await websocket.recv())
+        print('sam_ingest: received response from client: ' + await websocket.recv())
         await asyncio.sleep(1)
 
 sim_ingest_server = ws.serve(send_pos_report, 'localhost', ingest_server_port)
-
-#sim_acft = sam_ingest.sim_target()
 
 sim_acft_list = []
 

@@ -28,7 +28,7 @@ class Sam_Emitter():
             pos_rep = [report for report in pos_reps if report["name"] == self.target][0]
             #print(pos_rep)
         except IndexError:
-            print('nothing to be tracked')
+            print('sam_emitter: ' + self.name + ' has nothing to track')
             return
 
 
