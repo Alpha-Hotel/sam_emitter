@@ -1,0 +1,53 @@
+version: '3.7'
+
+services:
+  arsenal-services:
+    image: arsenal-services:latest
+    container_name: arsenal-services
+    build:
+      context: ./arsenal-services/
+      dockerfile: Dockerfile-prod
+    volumes:
+      - ./db:/db
+    ports:
+      - "8000:8000"
+    restart: on-failure
+    environment:
+      - RECEIVER_CALCULATED_LOSS=0
+    networks:
+      - arsenal-network
+  arsenal-app:
+    image: arsenal-app:latest
+    container_name: arsenal-app
+    build:
+      context: ./arsenal-app/
+      dockerfile: Dockerfile-prod
+    ports:
+      - "3001:80"
+    restart: on-failure
+    networks:
+      - arsenal-network
+  arsenal-admin:
+    image: arsenal-admin:latest
+    container_name: arsenal-admin
+    build:
+      context: ./arsenal-admin/docker
+      dockerfile: Dockerfile-prod
+    volumes:
+      - ./db:/data:rw
+    ports:
+      - "2015:8080"
+    environment:
+      - SQLITE_HOST=0.0.0.0
+      - SQLITE_PORT=8080
+      - SQLITE_DATABASE=db.sqlite
+      - SQLITE_PATH=/arsenal-admin
+      - SQLITE_WEB_PASSWORD=Arsenal1
+    restart: on-failure
+    networks:
+      - arsenal-network
+networks:
+  arsenal-network:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: arsenal-network

@@ -1,0 +1,42 @@
+version: '3.7'
+
+services:
+  sam-emitter-services:
+    image: sam-emitter-services:latest
+    container_name: sam-emitter-services
+    build:
+      context: ./sam-emitter-services/
+      dockerfile: Dockerfile
+    depends_on:
+      - sam-aircraft-services
+    ports:
+      - "6969:6969"
+    networks:
+      - sam-emitter-network
+  sam-aircraft-services:
+    image: sam-aircraft-services:latest
+    container_name: sam-aircraft-services
+    build:
+      context: ./sam-emitter-services/
+      dockerfile: Dockerfile-emitters
+    ports:
+      - "7060:7060"
+    networks:
+      - sam-emitter-network
+  dan-app:
+    image: dan-app:dev
+    container_name: dan-app
+    build:
+      context: ./dan-app/
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    networks:
+      - sam-emitter-network
+networks:
+  sam-emitter-network:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: se-network
