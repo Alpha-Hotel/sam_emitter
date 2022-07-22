@@ -1,0 +1,2 @@
+pymap3d==2.5.0
+websockets==8.1
