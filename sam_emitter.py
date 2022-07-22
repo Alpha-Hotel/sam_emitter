@@ -29,6 +29,7 @@ class Sam_Emitter():
             #print(pos_rep)
         except IndexError:
             print('sam_emitter: ' + self.name + ' has nothing to track')
+            self.status = 'not ready'
             return
 
 
