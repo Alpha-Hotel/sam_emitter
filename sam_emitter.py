@@ -1,6 +1,7 @@
 import json
 import time
 import pymap3d as pm
+import geotool as gt
 
 
 class Sam_Emitter():
@@ -19,36 +20,51 @@ class Sam_Emitter():
         self.status = 'not ready'
         self.threat = 'merciful_potato'
         self.slant_range_to_target = 0
+        self.geo_data= []
+        self.time_data=[]
+        self.elevation_data=[]
 
     def track_target(self, pos_reps): 
         '''Change altitude + azimuth based on degrees from desired angle'''
         pos_reps = json.loads(pos_reps)
-        
         try:
             pos_rep = [report for report in pos_reps if report["name"] == self.target][0]
-            #print(pos_rep)
         except IndexError:
             print('nothing to be tracked')
+            self.range=0
             return
 
 
+        if len(self.geo_data) == 5:
+            self.geo_data.remove(self.geo_data[0])
+            self.time_data.remove(self.time_data[0])
+            self.elevation_data.remove(self.elevation_data[0])
+            self.geo_data.append([pos_rep["lng"], pos_rep["lat"]])
+            self.time_data.append([pos_rep['time']])
+            self.elevation_data.append(pos_rep['alt'])
+        else:
+            self.geo_data.append([pos_rep["lng"], pos_rep["lat"]])
+            self.time_data.append(pos_rep['time'])
+            self.elevation_data.append(pos_rep['alt'])
+
+        lat, lon, alt = gt.interpolate(self.geo_data, self.time_data, self.elevation_data)
         desired_antenna_azimuth_degrees, desired_antenna_elevation_degrees, self.slant_range_to_target = pm.geodetic2aer(
-            float(pos_rep['lat']), 
-            float(pos_rep['lng']), 
-            self.feet_to_meters(float(pos_rep['alt'])), 
+            float(lat), 
+            float(lon), 
+            alt/1000, 
             self.latitude, 
             self.longitude, 
             self.feet_to_meters(self.antenna_height)) #meters"
-
+        print("moving to {} az, {} el".format(desired_antenna_azimuth_degrees, desired_antenna_elevation_degrees))
         ### changing antenna elevation
-        #difference = self.double_angle_difference(self.elevation_degrees, desired_antenna_elevation_degrees)
-        #if abs(desired_antenna_elevation_degrees - self.elevation_degrees) < 10: # changing antenna elevation
-        #    self.elevation_degrees = desired_antenna_elevation_degrees
-        #else:
-        #    if difference > 0:
-        #         self.elevation_degrees = self.elevation_degrees+self.slew_elevation_rate
-        #    else:
-        #        self.elevation_degrees=self.elevation_degrees - self.slew_elevation_rate
+        difference = self.double_angle_difference(self.elevation_degrees, desired_antenna_elevation_degrees)
+        if abs(desired_antenna_elevation_degrees - self.elevation_degrees) < 10: # changing antenna elevation
+            self.elevation_degrees = desired_antenna_elevation_degrees
+        else:
+            if difference > 0:
+                 self.elevation_degrees = self.elevation_degrees+self.slew_elevation_rate
+            else:
+                self.elevation_degrees=self.elevation_degrees - self.slew_elevation_rate
 
         difference = self.double_angle_difference(self.azimuth_degrees, desired_antenna_azimuth_degrees)
         ### changing antenna azimuth
